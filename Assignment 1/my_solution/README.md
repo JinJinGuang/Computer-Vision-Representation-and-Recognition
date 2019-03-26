@@ -10,7 +10,7 @@ img1 = Q2.myImageFilter(img0,h)
 
 另有一些注释附在代码旁边。
 
-#第三题代码说明：
+# 第三题代码说明：
 ## 实现 Question3.1(i)
 - 函数原型 cvt_color(img_path, gray=True, plot=False)
 - #这个函数输入路径，可以选择得到灰度还是RGB彩色图，默认得到对应的灰度图像
