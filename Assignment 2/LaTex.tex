@@ -1,0 +1,333 @@
+\documentclass[a4paper,UTF8,11pt]{article}
+\usepackage{xeCJK}
+
+%\usepackage{ctex}
+\usepackage[margin=1.25in]{geometry}
+\usepackage{color}
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{enumerate}
+\usepackage{bm}
+\usepackage{hyperref}
+\usepackage{epsfig}
+\usepackage{indentfirst}
+\usepackage{color}
+\usepackage{mdframed}
+\usepackage{lipsum}
+\usepackage{mathtools}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{booktabs}
+\usepackage{longtable}
+
+\newmdtheoremenv{thm-box}{myThm}
+\newmdtheoremenv{prop-box}{Proposition}
+\newmdtheoremenv{def-box}{define}
+
+\hypersetup{hidelinks}
+
+\setlength{\evensidemargin}{.25in}
+\setlength{\textwidth}{6in}
+\setlength{\topmargin}{-0.5in}
+\setlength{\topmargin}{-0.5in}
+% \setlength{\textheight}{9.5in}
+%%%%%%%%%%%%%%%%%%set header and footer here%%%%%%%%%%%%%%%%%%
+\usepackage{fancyhdr}                                
+\usepackage{lastpage}                                           
+\usepackage{layout}                                             
+\footskip = 10pt 
+\pagestyle{fancy}                    
+\lhead{2019, Spring}                    
+\chead{Computer Vision: Representation and Recognition}
+\rhead{Assignment 2}                                                                                               
+\cfoot{\thepage}                                                
+\renewcommand{\headrulewidth}{1pt}  			%header
+\setlength{\skip\footins}{0.5cm}    			
+\renewcommand{\footrulewidth}{0pt}  
+	
+
+\makeatletter 							
+\def\headrule{{\if@fancyplain\let\headrulewidth\plainheadrulewidth\fi%
+\hrule\@height 1.0pt \@width\headwidth\vskip1pt	
+\hrule\@height 0.5pt\@width\headwidth  			
+\vskip-2\headrulewidth\vskip-1pt}      			
+ \vspace{6mm}}     						
+\makeatother  
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\numberwithin{equation}{section}
+\newtheorem{myThm}{myThm}
+\newtheorem*{myDef}{Definition}
+\newtheorem*{mySol}{Solution}
+\newtheorem*{myProof}{Proof}
+\newcommand{\indep}{\rotatebox[origin=c]{90}{$\models$}}
+\newcommand*\diff{\mathop{}\!\mathrm{d}}
+
+\usepackage{multirow}
+\renewcommand\refname{reference}
+
+\linespread{1.5}
+\setlength{\parskip}{4pt}
+
+\setlength{\parindent}{2em}	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+\title{Computer Vision: Representation and Recognition\\
+Assignment 2}
+\author{161180038, 广进, \href{mailto:guangjin1998@gmail.com}{guangjin1998@gmail.com}}
+\maketitle
+
+\section{Canny Edge Detector (30 points)}
+\subsection{Will the rotated edge be detected using the same Canny edge detector?}
+假设之前的点为$(x,y)$，对应函数为$ f(x,y) $，旋转之后点为$(x',y')$，对应函数为$ g(x',y') = f(x,y) $，经过旋转有如下关系：
+\begin{equation}
+{
+\left[ \begin{array}{c}
+x'\\
+y'
+\end{array}
+\right ]}
+=
+{
+\left[ \begin{array}{cc}
+cos(\theta) & -sin(\theta)\\
+sin(\theta) & cos(\theta)
+\end{array} 
+\right ]}
+{
+\left[ \begin{array}{c}
+x\\
+y
+\end{array}
+\right ]}
+\Rightarrow
+{
+\left[ \begin{array}{c}
+x\\
+y
+\end{array}
+\right ]}
+=
+{
+\left[ \begin{array}{cc}
+cos(\theta) & sin(\theta)\\
+-sin(\theta) & cos(\theta)
+\end{array} 
+\right ]}
+{
+\left[ \begin{array}{c}
+x'\\
+y'
+\end{array}
+\right ]}
+\end{equation}
+
+则有，
+\begin{align*}
+\dfrac{\partial g(x',y')}{\partial x'} &= \dfrac{\partial f(x,y)}{\partial x'} \\
+&=\dfrac{\partial f(x,y)}{\partial x}\dfrac{\partial x}{\partial x'}+\dfrac{\partial f(x,y)}{\partial y}\dfrac{\partial y}{\partial x'}\\
+&=\dfrac{\partial f(x,y)}{\partial x} cos(\theta)+\dfrac{\partial f(x,y)}{\partial y}(-sin(\theta))
+\end{align*}
+\begin{align*}
+\dfrac{\partial g(x',y')}{\partial y'} &= \dfrac{\partial f(x,y)}{\partial y'} \\
+&=\dfrac{\partial f(x,y)}{\partial x}\dfrac{\partial x}{\partial y'}+\dfrac{\partial f(x,y)}{\partial y}\dfrac{\partial y}{\partial y'}\\
+&=\dfrac{\partial f(x,y)}{\partial x} sin(\theta)+\dfrac{\partial f(x,y)}{\partial y}cos(\theta)
+\end{align*}
+
+从而有,
+\begin{align*}
+(\dfrac{\partial g(x',y')}{\partial x'})^2&=(\dfrac{\partial f(x,y)}{\partial x} cos(\theta)+\dfrac{\partial f(x,y)}{\partial y}(-sin(\theta)))^2\\
+&=(\dfrac{\partial f(x,y)}{\partial x} cos(\theta))^2+(\dfrac{\partial f(x,y)}{\partial y}sin(\theta))^2-2\dfrac{\partial f(x,y)}{\partial x}\dfrac{\partial f(x,y)}{\partial y}sin(\theta)cos(\theta)
+\end{align*}
+\begin{align*}
+(\dfrac{\partial g(x',y')}{\partial y'})^2&=(\dfrac{\partial f(x,y)}{\partial x} sin(\theta)+\dfrac{\partial f(x,y)}{\partial y}cos(\theta))^2\\
+&=(\dfrac{\partial f(x,y)}{\partial x} sin(\theta))^2+(\dfrac{\partial f(x,y)}{\partial y}cos(\theta))^2+2\dfrac{\partial f(x,y)}{\partial x}\dfrac{\partial f(x,y)}{\partial y}sin(\theta)cos(\theta)
+\end{align*}
+
+故有 the magnitude of its derivative：
+\begin{equation}
+\sqrt{(\dfrac{\partial g(x',y')}{\partial x'})^2+(\dfrac{\partial g(x',y')}{\partial y'})^2}
+=\sqrt{(\dfrac{\partial f(x,y)}{\partial x})^2+(\dfrac{\partial f(x,y)}{\partial y})^2}
+\end{equation}
+
+Therefore, the rotated edge will be detected using the same Canny edge detector.
+
+\subsection{how to adjust the threshold (up or down) to address both problems}
+Canny算法中减少假边缘数量的方法是采用双阈值法\footnote{Canny边缘检测算法原理及其VC实现详解(一) https://blog.csdn.net/likezhaobin/article/details/6892176 \\}。选择两个阈值，根据高阈值得到一个边缘图像，这样一个图像含有很少的假边缘，但是由于阈值较高，产生的图像边缘可能不闭合，未解决这样一个问题采用了另外一个低阈值。在高阈值图像中把边缘链接成轮廓，当到达轮廓的端点时，该算法会在断点的8邻域点中寻找满足低阈值的点，再根据此点收集新的边缘，直到整个图像边缘闭合。
+
+Long edges are broken into short segments separated by gaps: 是因为介于高阈值和低阈值中间没有足够的候选者，无法产生闭合边。所以应该将低阈值降低以有更多候选者。
+
+Some spurious edges appear: 是因为假边有一部分误以为是必须要的，应该通过提高高阈值来抑制假边。
+
+最简单方法\footnote{Canny Edge Detection Auto Thresholding http://www.kerrywong.com/2009/05/07/canny-edge-detection-auto-thresholding/}：使用平均值或者中位数。令 high threshold 为1.33倍的平均值/中位数，low threshold 为0.67倍的平均值/中位数
+
+
+
+
+\newpage
+\section{Difference-of-Gaussian (DoG) Detector (30 points)}
+本部分代码请见 DoG.ipynb，不过图示部分均在pdf有展示。
+\subsection{2nd derivative with respect to x}
+The 1-D Gaussian is
+\begin{equation*}
+g_{sigma}(x)=\dfrac{1}{\sqrt{2\pi}\sigma}exp(-\dfrac{x^2}{2\sigma^2})
+\end{equation*}
+
+1st derivative with respect to x is
+\begin{align*}
+g_{sigma}'(x)&=\dfrac{1}{\sqrt{2\pi}\sigma}exp(-\dfrac{x^2}{2\sigma^2})*(-\dfrac{x}{\sigma^2})\\
+&=-\dfrac{x}{\sqrt{2\pi}\sigma^3}exp(-\dfrac{x^2}{2\sigma^2})
+\end{align*}
+
+2nd derivative with respect to x is
+\begin{align*}
+g_{sigma}''(x)&=-\dfrac{1}{\sqrt{2\pi}\sigma^3}exp(-\dfrac{x^2}{2\sigma^2})-\dfrac{x}{\sqrt{2\pi}\sigma^3}exp(-\dfrac{x^2}{2\sigma^2})*(-\dfrac{x}{\sigma^2})\\
+&=\dfrac{1}{\sqrt{2\pi}\sigma^3}(\dfrac{x^2}{\sigma^2}-1)exp(-\dfrac{x^2}{2\sigma^2})
+\end{align*}
+
+use Python to plot it (use σ = 1)
+	\begin{figure}[h]
+		\centering  %centering image
+		\includegraphics[scale=0.7]{Gauss2.png}  % load image
+		\caption{2nd derivative with respect to x }  %
+	\end{figure}
+	
+	
+\subsection{plot the difference of Gaussians in 1-D}	
+Use Python to plot them (use σ = 1, k = 1.2, 1.4, 1.6, 1.8, 2.0), and k = 1.2 gives the best approximation to the 2nd derivative with respect to x.
+\begin{figure}[h]
+\centering
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\includegraphics[width=7.5cm]{1-2.png}
+\end{minipage}
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\includegraphics[width=7.5cm]{1-4.png}
+\end{minipage}
+
+\centering
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\includegraphics[width=7.5cm]{1-6.png}
+\end{minipage}
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\includegraphics[width=7.5cm]{1-8.png}
+\end{minipage}
+
+\centering
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\includegraphics[width=7.5cm]{2-0.png}
+\end{minipage}
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\includegraphics[width=7.5cm]{1-001.png}
+\end{minipage}
+\end{figure}
+
+Morever, We can see that 1st derivative with respect to $\sigma $ is
+\begin{align*}
+\dfrac{\partial g_{sigma}}{\partial \sigma} &= \dfrac{1}{\sqrt{2\pi}}(-\dfrac{1}{\sigma^2})exp(-\dfrac{x^2}{2\sigma^2})+\dfrac{1}{\sqrt{2\pi}\sigma}exp(-\dfrac{x^2}{2\sigma^2})(-\dfrac{x^2}{2})(-2\dfrac{1}{\sigma^3}))\\
+&=\dfrac{1}{\sqrt{2\pi}\sigma^2}(\dfrac{x^2}{\sigma^2}-1)exp(-\dfrac{x^2}{2\sigma^2})\\
+&=\sigma  \dfrac{\partial^2 g_{sigma}}{\partial^2 x}  
+\end{align*}
+
+When $\sigma = 1$, $\dfrac{\partial g_{sigma}}{\partial \sigma}=\dfrac{\partial^2 g_{sigma}}{\partial^2 x}  $ , so $k\rightarrow 1 $ gives the best approximation to the 2nd derivative with respect to x. And we can see k=1.001 is better than k=1.2
+
+\subsection{The 2D equivalents of the plots above are rotationally symmetric. To what type of image structure will a difference of Gaussian respond maximally?}
+由下图\footnote{图片来自于https://blog.csdn.net/pi9nc/article/details/18619893}结合上面DoG图像，可以看到，DoG对中心点负响应最大，周围有一圈正响应。所以如果做卷积，对于黑点（周围白背景且点的范围也要合适）响应最大。
+	\begin{figure}[h]
+		\centering  %centering image
+		\includegraphics[height=8cm]{2D.png}  % load image
+		\caption{2D高斯二阶导}  %
+	\end{figure}
+	
+另外，使用DoG算子对图像做处理，其极大值和极小值还可以检测角点。
+
+\newpage
+
+
+\section{Edge detector(40 points)}
+本部分代码请见 Edge\_detector.py, 详细使用方法请见 README.md
+
+\subsection{效果展示}
+\subsubsection{Lenna  threshold:0.015}
+	\begin{figure}[h]
+		\centering  %centering image
+		\includegraphics[width=13cm]{0_015_Lenna.png}  % load image
+		\caption{Lenna Edge}  %
+	\end{figure}
+\newpage
+\subsubsection{Cup  threshold:0.5}
+图片来自于昵图网\footnote{http://pica.nipic.com/2007-11-26/200711262323153\_2.jpg}
+\begin{figure}[h]
+\centering
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\includegraphics[width=7.5cm]{200711262323153_2.jpg}
+\end{minipage}
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\includegraphics[width=7.5cm]{323153_2.jpg}
+\end{minipage}
+\end{figure}
+
+\subsubsection{Blueberry and Cup  threshold:8}
+图片来自于http://www.weimeiba.com\footnote{http://old.bz55.com/uploads/allimg/140903/138-140Z3093610.jpg}
+\begin{figure}[h]
+\centering
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\includegraphics[width=7.5cm]{138-140Z3093610.jpg}
+\end{minipage}
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\includegraphics[width=7.5cm]{8_138-140Z3093610.jpg}
+\end{minipage}
+\end{figure}
+
+\newpage
+\subsubsection{Pandas  threshold:8}
+图片来自于互动百科、昵图网\footnote{http://a4.att.hudong.com/63/06/16300000291746124581064816436.jpg}
+\begin{figure}[h]
+\centering
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\includegraphics[width=7.5cm]{8816813_225638566000_2.jpg}
+\end{minipage}
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\includegraphics[width=7.5cm]{8_8816813_225638566000_2.jpg}
+\end{minipage}
+\end{figure}
+
+\subsubsection{Teapot  threshold:15}
+茶壶茶杯图片来自于昵图网\footnote{http://pic20.nipic.com/20120427/3177520\_175320712116\_2.jpg}
+\begin{figure}[h]
+\centering
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\includegraphics[width=7.5cm]{th.jpeg}
+\end{minipage}
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\includegraphics[width=7.5cm]{15_th.jpeg}
+\end{minipage}
+\end{figure}
+\end{document}
+
+
+
+
+
+
+
+
+
+
+\end{document}
